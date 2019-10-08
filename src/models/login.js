@@ -1,12 +1,13 @@
 import { routerRedux } from 'dva/router';
 import { stringify } from 'querystring';
-import { fakeAccountLogin, getFakeCaptcha } from '@/services/login';
+import { fakeAccountLogin, getCaptcha } from '@/services/login';
 import { setAuthority } from '@/utils/authority';
 import { getPageQuery } from '@/utils/utils';
 const Model = {
   namespace: 'login',
   state: {
     status: undefined,
+    captcha: {},
   },
   effects: {
     *login({ payload }, { call, put }) {
@@ -40,8 +41,14 @@ const Model = {
       }
     },
 
-    *getCaptcha({ payload }, { call }) {
-      yield call(getFakeCaptcha, payload);
+    // 获取验证码
+    *getCaptcha({ payload }, { call, put }) {
+      console.log('getCaptcha');
+      const response = yield call(getCaptcha, payload);
+      yield put({
+        type: 'save',
+        payload: { captcha: response },
+      });
     },
 
     *logout(_, { put }) {

@@ -1,4 +1,4 @@
-import { Alert, Checkbox, Icon } from 'antd';
+import { Alert, Checkbox, Icon, Form, Input, Button } from 'antd';
 import React, { Component } from 'react';
 import Link from 'umi/link';
 import { connect } from 'dva';
@@ -7,10 +7,13 @@ import styles from './style.less';
 
 const { Tab, UserName, Password, Mobile, Captcha, Submit } = LoginComponents;
 
+const FormItem = Form.Item;
+
 @connect(({ login, loading }) => ({
   userLogin: login,
   submitting: loading.effects['login/login'],
 }))
+@Form.create()
 class Login extends Component {
   loginForm = undefined;
 
@@ -18,6 +21,21 @@ class Login extends Component {
     type: 'account',
     autoLogin: true,
   };
+
+  componentWillMount() {
+    console.log(222)
+    this.onGetCaptcha();
+  }
+
+  onGetCaptcha = () =>
+    new Promise((resolve, reject) => {
+      console.log('onGetCaptcha');
+      const { dispatch } = this.props;
+      console.log('onGetCaptcha');
+      dispatch({ type: 'login/getCaptcha' })
+        .then(resolve)
+        .catch(reject);
+    });
 
   changeAutoLogin = e => {
     this.setState({
@@ -80,101 +98,102 @@ class Login extends Component {
   );
 
   render() {
-    const { userLogin, submitting } = this.props;
+    const { userLogin, submitting, form } = this.props;
+    const { captcha } = userLogin;
+    const { passwordIcon } = this.state;
     const { status, type: loginType } = userLogin;
     const { type, autoLogin } = this.state;
+    const { getFieldDecorator } = form;
     return (
       <div className={styles.main}>
-        <LoginComponents
-          defaultActiveKey={type}
-          onTabChange={this.onTabChange}
-          onSubmit={this.handleSubmit}
-          onCreate={form => {
-            this.loginForm = form;
-          }}
-        >
-          <Tab key="account" tab="账户密码登录">
-            {status === 'error' &&
-              loginType === 'account' &&
-              !submitting &&
-              this.renderMessage('账户或密码错误（admin/ant.design）')}
-            <UserName
-              name="userName"
-              placeholder={`${'用户名'}: admin or user`}
-              rules={[
+        <h3 className={styles.title} style={{ fontSize: 14 }}>
+          ll-admin 后台管理员平台
+        </h3>
+        <Form className={styles.form}>
+          <FormItem>
+            {getFieldDecorator('username', {
+              rules: [
                 {
                   required: true,
-                  message: '请输入用户名!',
+                  message: '请输入账户名！',
                 },
-              ]}
-            />
-            <Password
-              name="password"
-              placeholder={`${'密码'}: ant.design`}
-              rules={[
+              ],
+            })(
+              <Input
+                prefix={<Icon type="user" className={styles.prefixIcon} />}
+                placeholder="请输入帐户名"
+                maxLength={30}
+              />,
+            )}
+          </FormItem>
+          <FormItem>
+            {getFieldDecorator('password', {
+              rules: [
                 {
                   required: true,
                   message: '请输入密码！',
                 },
-              ]}
-              onPressEnter={e => {
-                e.preventDefault();
-
-                if (this.loginForm) {
-                  this.loginForm.validateFields(this.handleSubmit);
-                }
-              }}
-            />
-          </Tab>
-          <Tab key="mobile" tab="手机号登录">
-            {status === 'error' &&
-              loginType === 'mobile' &&
-              !submitting &&
-              this.renderMessage('验证码错误')}
-            <Mobile
-              name="mobile"
-              placeholder="手机号"
-              rules={[
-                {
-                  required: true,
-                  message: '请输入手机号！',
-                },
-                {
-                  pattern: /^1\d{10}$/,
-                  message: '手机号格式错误！',
-                },
-              ]}
-            />
-            <Captcha
-              name="captcha"
-              placeholder="验证码"
-              countDown={120}
-              onGetCaptcha={this.onGetCaptcha}
-              getCaptchaButtonText="获取验证码"
-              getCaptchaSecondText="秒"
-              rules={[
+              ],
+            })(
+              <Input
+                prefix={<Icon type="key" className={styles.prefixIcon} />}
+                suffix={<Icon type="eye" className={styles.prefixIcon} onClick={this.handleLook} />}
+                type={passwordIcon ? 'text' : 'password'}
+                theme="twoTone"
+                maxLength={30}
+                placeholder="请输入密码"
+              />,
+            )}
+          </FormItem>
+          <FormItem>
+            {getFieldDecorator('code', {
+              rules: [
                 {
                   required: true,
                   message: '请输入验证码！',
                 },
-              ]}
-            />
-          </Tab>
-          <div>
-            <Checkbox checked={autoLogin} onChange={this.changeAutoLogin}>
-              自动登录
-            </Checkbox>
-            <a
-              style={{
-                float: 'right',
-              }}
-              href=""
+              ],
+            })(
+              <Input
+                prefix={<Icon type="key" className={styles.prefixIcon} />}
+                theme="twoTone"
+                maxLength={30}
+                className={styles.code}
+                placeholder="请输入验证码"
+              />,
+            )}
+            {captcha.img && (
+              <img
+                className={styles.captcha}
+                src={`data:image/gif;base64,${captcha.img}`}
+                alt=""
+                onClick={this.onGetCaptcha}
+              />
+            )}
+          </FormItem>
+          <FormItem className={styles.additional}>
+            <div>
+              {getFieldDecorator('remember', {
+                valuePropName: localStorage.getItem('REMEMBER') ? 'checked' : 'none',
+                initialValue: true,
+              })(
+                <Checkbox onChange={this.handleRemember} style={{ font: '#8190B0' }}>
+                  <span className={styles.automatic}>记住我</span>
+                </Checkbox>,
+              )}
+            </div>
+            <Button
+              size="large"
+              loading={userLogin.submitting}
+              className={styles.submit}
+              type="primary"
+              htmlType="submit"
+              onClick={this.handleSubmit}
             >
-              忘记密码
-            </a>
-          </div>
-          <Submit loading={submitting}>登录</Submit>
-        </LoginComponents>
+              登录
+            </Button>
+          </FormItem>
+        </Form>
       </div>
     );
   }
