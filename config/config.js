@@ -73,8 +73,8 @@ export default {
   plugins,
   block: {
     // 国内用户可以使用码云
-    // defaultGitUrl: 'https://gitee.com/ant-design/pro-blocks',
-    defaultGitUrl: 'https://github.com/ant-design/pro-blocks',
+    defaultGitUrl: 'https://gitee.com/ant-design/pro-blocks',
+    //defaultGitUrl: 'https://github.com/ant-design/pro-blocks',
   },
   hash: true,
   targets: {
@@ -174,13 +174,13 @@ export default {
     basePath: '/',
   },
   chainWebpack: webpackPlugin,
-  /*
   proxy: {
-    '/server/api/': {
-      target: 'https://preview.pro.ant.design/',
+    '/system/api/': {
+      target: 'http://localhost:8080',
       changeOrigin: true,
       pathRewrite: { '^/server': '' },
     },
   },
-  */
+  treeShaking: true,
 };
+

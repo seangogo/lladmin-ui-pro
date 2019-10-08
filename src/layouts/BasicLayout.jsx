@@ -12,7 +12,7 @@ import RightContent from '@/components/GlobalHeader/RightContent';
 import { isAntDesignPro } from '@/utils/utils';
 import logo from '../assets/logo.svg';
 /**
- * use Authorized check all menu item
+ * 使用授权检查所有菜单项
  */
 
 const menuDataRender = menuList =>
